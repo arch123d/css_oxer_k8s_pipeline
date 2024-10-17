@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: my-oxer
+  labels:
+    app: my-oxer
+spec:
+  replicas: 3
+  selector:
+    matchLabels:  # Corrected from matchlabels to matchLabels (case-sensitive)
+      app: my-oxer
+  template:
+    metadata:
+      labels:
+        app: my-oxer
+    spec:
+      containers:  # Added containers key
+        - name: container-oxer  # Moved name and image under containers
+          image: archanadhoti11199315/oxer:v1 
+          ports:
+            - name: oxerport
+              containerPort: 80
+              protocol: TCP
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: my-oxer-service  # Changed to avoid spaces in the name
+spec:
+  selector:
+    app: my-oxer
+  type: LoadBalancer
+  ports:
+    - name: oxerport
+      port: 80
+      targetPort: 80
+
