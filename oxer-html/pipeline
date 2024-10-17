@@ -12,7 +12,7 @@ pipeline {
         } 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t ${DOCKERHUB_REPO}:${BUILD_NUMBER} .'  
+                sh 'docker build -t ${DOCKERHUB_REPO}:${BUILD_NUMBER} oxer-html/.'  
             }
         }
      stage('Push Docker Image') {
@@ -36,7 +36,7 @@ pipeline {
                     script {
                         sh """
                     aws eks update-kubeconfig --name cluster --region ap-south-1 --kubeconfig /tmp/config # /root/.kube/config kubernets CREd store in the tmp
-                    kubectl apply -f oxer.yml --kubeconfig=/tmp/config 
+                    kubectl apply -f oxer-html/oxer.yml --kubeconfig=/tmp/config 
                     kubectl set image deployment/my-oxer container-oxer=${DOCKERHUB_REPO}:${env.BUILD_NUMBER} --kubeconfig=/tmp/config 
                     """
                     }
