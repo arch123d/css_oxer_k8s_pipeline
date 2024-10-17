@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_REPO = archanadhoti11199315/oxer
+        DOCKERHUB_REPO = 'archanadhoti11199315/oxer'
     }
     stages {
         stage('pull') {
