@@ -1,0 +1,47 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKERHUB_REPO = archanadhoti11199315/oxer
+    }
+    stages {
+        stage('pull') {
+            steps {
+                git 'https://github.com/arch123d/css_oxer_k8s_pipeline.git'
+            }
+        } 
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t ${DOCKERHUB_REPO}:${BUILD_NUMBER} .'  
+            }
+        }
+     stage('Push Docker Image') {
+            environment {
+                registryCredential = 'Docker'
+            }
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', registryCredential) {
+                        sh 'docker push ${DOCKERHUB_REPO}:${BUILD_NUMBER}'
+                    }
+                } 
+            }
+        }
+        stage('Deploy to Kubernetes') {
+            environment {
+                AWS_CREDENTIALS = 'aws_credentials'
+            }
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: AWS_CREDENTIALS]]) {
+                    script {
+                        sh """
+                    aws eks update-kubeconfig --name cluster --region ap-south-1 --kubeconfig /tmp/config # /root/.kube/config kubernets CREd store in the tmp
+                    kubectl apply -f oxer.yml --kubeconfig=/tmp/config 
+                    kubectl set image deployment/my-oxer container-oxer=${DOCKERHUB_REPO}:${env.BUILD_NUMBER} --kubeconfig=/tmp/config 
+                    """
+                    }
+                }
+            }
+        }
+    }
+}
